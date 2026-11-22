@@ -1,0 +1,75 @@
+{
+    // Ctrl+Shift+B 默认跑 "build"。
+    // F5 调试前也会自动跑 "build"（见 launch.json 的 preLaunchTask）。
+    //
+    // 三个任务：
+    //   build        编译（CubeMX 生成的 Makefile）
+    //   flash (JLink) 用 J-Link Commander 把 ELF 烧进去
+    //   clean        清掉 build/ 目录
+
+    "version": "2.0.0",
+
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+
+            // 用 mingw32-make 跑 CubeMX 生成的 Makefile。
+            "command": "mingw32-make",
+            "args": ["-j12"],
+
+            "options": {
+                "cwd": "${workspaceFolder}",
+                // 工程要用的交叉编译器不在系统 PATH 上，这里单独补进去。
+                "env": {
+                    "PATH": "D:\\14.3_rel1\\bin;${env:PATH}"
+                }
+            },
+
+            "problemMatcher": [],
+
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "flash (JLink)",
+            "type": "shell",
+
+            // 直接用 J-Link Commander 烧写，不经过 VS Code 调试器。
+            // 适合"改完代码只想烧进去跑一下"的场合。
+            "command": "C:/Program Files/SEGGER/JLink_V956/JLink.exe",
+            "args": [
+                "-device", "STM32F407IG",
+                "-if", "SWD",
+                "-speed", "4000",
+                "-autoconnect", "1",
+                "-CommanderScript", ".vscode/jlink-flash.jlink"
+            ],
+
+            "options": {
+                // CommanderScript 里的相对路径（build/week4+5.elf）以这个为基准。
+                "cwd": "${workspaceFolder}"
+            },
+
+            // 先编译再烧，避免烧到上一次的旧固件。
+            "dependsOn": "build",
+
+            "problemMatcher": []
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "mingw32-make",
+            "args": ["clean"],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PATH": "D:\\14.3_rel1\\bin;${env:PATH}"
+                }
+            },
+            "problemMatcher": []
+        }
+    ]
+}

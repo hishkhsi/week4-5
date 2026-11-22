@@ -1,0 +1,8 @@
+// J-Link Commander 脚本：由 tasks.json 的 "flash (JLink)" 调用。
+// 相对路径以工程根目录为基准（任务里设置了 cwd）。
+
+erase
+loadfile build/week4+5.elf
+r
+g
+qc

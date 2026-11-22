@@ -1,0 +1,42 @@
+{
+    // IntelliSense 用。只影响编辑器里的补全和跳转，不参与编译。
+    // 编译用的宏和包含路径在 CubeMX 生成的 Makefile 里，两边要保持一致。
+
+    "configurations": [
+        {
+            "name": "STM32F407 (C板)",
+
+            // 用工程实际使用的交叉编译器，这样 sizeof/内建宏才对得上。
+            "compilerPath": "D:/14.3_rel1/bin/arm-none-eabi-gcc.exe",
+            "intelliSenseMode": "windows-gcc-arm",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14",
+
+            "includePath": [
+                "${workspaceFolder}/Core/Inc",
+                "${workspaceFolder}/Drivers/STM32F4xx_HAL_Driver/Inc",
+                "${workspaceFolder}/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
+                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
+                "${workspaceFolder}/Drivers/CMSIS/Include"
+            ],
+
+            // 这两个宏必须和 Makefile 里的 -D 一致：
+            //   USE_HAL_DRIVER  启用 HAL
+            //   STM32F407xx     选中具体型号的寄存器定义
+            "defines": [
+                "USE_HAL_DRIVER",
+                "STM32F407xx"
+            ],
+
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/Core",
+                    "${workspaceFolder}/Drivers"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+
+    "version": 4
+}

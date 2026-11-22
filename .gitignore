@@ -1,0 +1,11 @@
+build/
+*.hex
+*.bin
+*.map
+*.lst
+.mxproject
+
+# 本地文件，不入库
+week4_original.mp4
+*.jdebug.user
+*.bak-*

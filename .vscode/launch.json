@@ -1,0 +1,152 @@
+{
+    // F5 启动调试。快捷键 F5；Ctrl+Shift+B 只编译不调试。
+    //
+    // 目标芯片：STM32F407IGH6（C板，UFBGA176）
+    // ELF：build/week4+5.elf
+    // 三套配置，用不上的可以删：
+    //   1. J-Link    -> SEGGER J-Link GDB Server -> GDB（本次主要用这个）
+    //   2. DAPLink   -> OpenOCD -> GDB（备用，第三周那块DAPLink）
+    //   3. ST-Link   -> OpenOCD -> GDB（备用）
+    //
+    // 换工程名要改三处 executable。
+    // 换芯片要同步改 device（和 DAPLink/ST-Link 的 target 配置文件）。
+
+    "version": "0.2.0",
+
+    "configurations": [
+
+        // ============================================================
+        // J-Link（本次主要用）
+        // ============================================================
+        {
+            "name": "J-Link (C板)",
+
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/week4+5.elf",
+
+            "request": "launch",
+            "type": "cortex-debug",
+
+            // 这里要写 GDB Server 的**可执行文件全路径**，不是目录！
+            // 只写目录会报 "spawn ... ENOENT"（拿目录当程序启动，找不到）。
+            // 用 ...CL.exe 这个命令行版，不会额外弹 J-Link 窗口；
+            // 想看得见连接日志就换成同级目录下的 JLinkGDBServer.exe。
+            // 版本号（V956）随安装变化，升级 J-Link 后这里要跟着改。
+            "serverpath": "D:/RoboMaster/tools/JLink_V956/JLinkGDBServerCL.exe",
+
+            // J-Link GDB Server 需要明确的目标器件名。
+            // STM32F407IG 是 ST 的器件名，J-Link 内置器件表里有。
+            "servertype": "jlink",
+            "device": "STM32F407IG",
+
+            // C板调试口是 SWD 两线（SWDIO/SWCLK），不是 JTAG。
+            "interface": "swd",
+
+            // gcc/gdb 所在目录。不写会去系统 PATH 里找，找不到就报
+            // "arm-none-eabi-gdb: not found"。
+            "armToolchainPath": "D:/14.3_rel1/bin",
+
+            // 外设寄存器视图需要一个 SVD 文件，本机暂时没有 STM32F407.svd。
+            // 拿到后放到工程根目录，再把下面这行取消注释即可：
+            // "svdFile": "${workspaceFolder}/STM32F407.svd",
+
+            "runToEntryPoint": "main",
+
+            // 裸机工程，不开 FreeRTOS 那一项。
+            // "rtos": "FreeRTOS",
+
+            // 程序跑起来后实时观察变量（配合 Ozone 二选一即可）。
+            // 打开后：调试时在左侧「LIVE WATCH」面板右键 → Add to Live Watch，
+            // 程序全速运行中也能周期刷新变量，不需要点「暂停」。
+            // 变量必须是 volatile 的（rc_data / sbus_tick 都是），否则优化后会读失真。
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            },
+
+            "debuggerArgs": [
+                "-iex",
+                "set debug-file-directory ${workspaceFolder}/.gdb-debug",
+                "-iex",
+                "set remotetimeout 20"
+            ],
+
+            // F5 之前先编译。标签名必须和 tasks.json 里的 label 一字不差。
+            "preLaunchTask": "build"
+        },
+
+        // ============================================================
+        // DAPLink / CMSIS-DAP（备用）
+        // ============================================================
+        {
+            "name": "DAPLink (C板)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/week4+5.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+
+            "device": "STM32F407IG",
+
+            "servertype": "openocd",
+            // OpenOCD 自带的通用配置：CMSIS-DAP 接口 + STM32F4 系列目标。
+            // 注意是 stm32f4x.cfg（F4），不是第三周 F103 的 stm32f1x.cfg。
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/stm32f4x.cfg"
+            ],
+
+            "armToolchainPath": "D:/14.3_rel1/bin",
+
+            "runToEntryPoint": "main",
+
+            "liveWatch": {
+                "enabled": false
+            },
+
+            "debuggerArgs": [
+                "-iex",
+                "set debug-file-directory ${workspaceFolder}/.gdb-debug",
+                "-iex",
+                "set remotetimeout 20"
+            ],
+
+            "preLaunchTask": "build"
+        },
+
+        // ============================================================
+        // ST-Link（备用）
+        // ============================================================
+        {
+            "name": "ST-Link (C板)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/week4+5.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+
+            "device": "STM32F407IG",
+
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f4x.cfg"
+            ],
+
+            "armToolchainPath": "D:/14.3_rel1/bin",
+
+            "runToEntryPoint": "main",
+
+            "liveWatch": {
+                "enabled": false
+            },
+
+            "debuggerArgs": [
+                "-iex",
+                "set debug-file-directory ${workspaceFolder}/.gdb-debug",
+                "-iex",
+                "set remotetimeout 20"
+            ],
+
+            "preLaunchTask": "build"
+        }
+    ]
+}
